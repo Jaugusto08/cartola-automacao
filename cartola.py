@@ -60,7 +60,7 @@ def preparar_planilha(sheet, rodadas_do_mes):
         sheet.update_acell(cell_addr, formula)
 
     
-    faixa = f"{letra_total}2:{letra_total}{len(participantes) + 1}"
+    faixa = f"${letra_total}$2:${letra_total}${len(participantes)+1}"
     regra = ConditionalFormatRule(
         ranges=[{
             "sheetId": sheet._properties['sheetId'],
@@ -93,6 +93,35 @@ def preparar_planilha(sheet, rodadas_do_mes):
     format_cell_range(sheet, faixa_toda, centralizado)
 
 
+def aplicar_formatacao_total(sheet, total_col, participantes):
+    from gspread_formatting import (
+        get_conditional_format_rules, ConditionalFormatRule,
+        BooleanRule, BooleanCondition, CellFormat, Color
+    )
+
+    letra_total = gspread.utils.rowcol_to_a1(1, total_col)[0]
+    faixa = f"{letra_total}2:{letra_total}{len(participantes)+1}"
+
+    regra = ConditionalFormatRule(
+        ranges=[{
+            "sheetId": sheet._properties['sheetId'],
+            "startRowIndex": 1,
+            "endRowIndex": len(participantes) + 1,
+            "startColumnIndex": total_col - 1,
+            "endColumnIndex": total_col
+        }],
+        booleanRule=BooleanRule(
+            condition=BooleanCondition('CUSTOM_FORMULA', [
+                f'=ROW()=MATCH(MAX({faixa}), {faixa}, 0)+1'
+            ]),
+            format=CellFormat(backgroundColor=Color(0.8, 1, 0.8))  # Verde claro
+        )
+    )
+
+    rules = get_conditional_format_rules(sheet)
+    rules.clear()
+    rules.append(regra)
+    rules.save()
 
 
 def mostrar_pontuacoes(sheet, rodada, rodadas_do_mes):
@@ -106,7 +135,7 @@ def mostrar_pontuacoes(sheet, rodada, rodadas_do_mes):
             valor = ''
         print(f"{nome}: {valor if valor else 0}")
 
-def inserir_pontuacoes(sheet, rodada, rodadas_do_mes):
+def inserir_pontuacoes(sheet, rodada, rodadas_do_mes, total_col):
     col = rodadas_do_mes.index(rodada) + 2
     for i, nome in enumerate(participantes, start=2):
         entrada = input(f"Pontuação de {nome}: ")
@@ -115,8 +144,11 @@ def inserir_pontuacoes(sheet, rodada, rodadas_do_mes):
                 sheet.update_cell(i, col, float(entrada))
             except ValueError:
                 print("Valor inválido, ignorado.")
+                
+    aplicar_formatacao_total(sheet, total_col, participantes)
 
-def alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes):
+
+def alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes, total_col):
     col = rodadas_do_mes.index(rodada) + 2
     print("\nParticipantes:")
     for idx, nome in enumerate(participantes, start=1):
@@ -137,6 +169,9 @@ def alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes):
             print("Número inválido.")
     except ValueError:
         print("Entrada inválida.")
+        
+    aplicar_formatacao_total(sheet, total_col, participantes)
+
 
 def main():
     mes = input("Informe o mês (JUNHO, JULHO, AGOSTO, ...): ").strip().upper()
@@ -160,14 +195,16 @@ def main():
         print("2 - Alterar pontuação de um participante")
         print("3 - Sair")
         opcao = input("Escolha: ")
+        
+        total_col = len(rodadas_do_mes) + 2
 
         if opcao == '3':
             break
         elif opcao == '1':
-            inserir_pontuacoes(sheet, rodada, rodadas_do_mes)
+            inserir_pontuacoes(sheet, rodada, rodadas_do_mes, total_col)
             mostrar_pontuacoes(sheet, rodada, rodadas_do_mes)
         elif opcao == '2':
-            alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes)
+            alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes, total_col)
             mostrar_pontuacoes(sheet, rodada, rodadas_do_mes)
         else:
             print("Opção inválida.")
