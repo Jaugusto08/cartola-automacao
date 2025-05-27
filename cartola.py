@@ -8,7 +8,7 @@ participantes = [
     "Eduardo Morais", "Pedro Silva", "Ewerton Carlos", "Gustavo C.", "Gustavo H."
 ]
 
-# Mapeia os meses para suas rodadas
+
 meses = {
     "JUNHO": [11, 12],
     "JULHO": [13, 14, 15, 16, 17],
@@ -19,7 +19,7 @@ meses = {
     "DEZEMBRO": [33, 34, 35, 36, 37, 38]
 }
 
-# Autenticação
+
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
 client = gspread.authorize(creds)
@@ -27,7 +27,7 @@ client = gspread.authorize(creds)
 spreadsheet_id = "18aAiX2VtwYpbrTcblCCD3yvo8E4cf70DDMayoEc-v24"
 spreadsheet = client.open_by_key(spreadsheet_id)
 
-# Inicializa cabeçalhos e participantes para a aba do mês
+
 from gspread_formatting import (
     get_conditional_format_rules, ConditionalFormatRule,
     BooleanRule, CellFormat, Color
@@ -38,18 +38,18 @@ import gspread.utils
 
 
 def preparar_planilha(sheet, rodadas_do_mes):
-    total_col = len(rodadas_do_mes) + 2  # +2 porque começa em B
-    letra_total = gspread.utils.rowcol_to_a1(1, total_col)[0]  # ex: G
+    total_col = len(rodadas_do_mes) + 2  
+    letra_total = gspread.utils.rowcol_to_a1(1, total_col)[0]  
 
-    # Cabeçalhos das rodadas
+    
     for i, rodada in enumerate(rodadas_do_mes):
         col = i + 2
         if not sheet.cell(1, col).value:
             sheet.update_cell(1, col, f"Rodada {rodada}")
-    # Cabeçalho TOTAL
+   
     sheet.update_cell(1, total_col, "TOTAL")
 
-    # Adiciona nomes e fórmulas de soma
+    
     for idx, nome in enumerate(participantes, start=2):
         if sheet.cell(idx, 1).value != nome:
             sheet.update_cell(idx, 1, nome)
@@ -59,7 +59,7 @@ def preparar_planilha(sheet, rodadas_do_mes):
         cell_addr = gspread.utils.rowcol_to_a1(idx, total_col)
         sheet.update_acell(cell_addr, formula)
 
-    # Formatação condicional: destaca o maior valor com fundo verde
+    
     faixa = f"{letra_total}2:{letra_total}{len(participantes) + 1}"
     regra = ConditionalFormatRule(
         ranges=[{
@@ -76,20 +76,20 @@ def preparar_planilha(sheet, rodadas_do_mes):
 
     )
 
-    # Aplica a formatação condicional
+    
     rules = get_conditional_format_rules(sheet)
-    rules.clear()  # remove antigas
-    rules.append(regra)  # adiciona nova
-    rules.save()  # salva no Google Sheets
+    rules.clear()  
+    rules.append(regra)  
+    rules.save()
     
     centralizado = CellFormat(horizontalAlignment='CENTER')
 
-    # Intervalo de colunas de pontuação (ex: B a G) + TOTAL (ex: H)
-    letra_inicio = gspread.utils.rowcol_to_a1(1, 2)[0]  # Ex: B
-    letra_total = gspread.utils.rowcol_to_a1(1, total_col)[0]  # Ex: H
+    
+    letra_inicio = gspread.utils.rowcol_to_a1(1, 2)[0]  
+    letra_total = gspread.utils.rowcol_to_a1(1, total_col)[0]  
     faixa_toda = f"{letra_inicio}2:{letra_total}{len(participantes)+1}"
 
-    # Aplica o alinhamento
+    
     format_cell_range(sheet, faixa_toda, centralizado)
 
 
@@ -97,7 +97,7 @@ def preparar_planilha(sheet, rodadas_do_mes):
 
 def mostrar_pontuacoes(sheet, rodada, rodadas_do_mes):
     print(f"\nRodada {rodada}")
-    col = rodadas_do_mes.index(rodada) + 2  # +2 porque col 1 é nome
+    col = rodadas_do_mes.index(rodada) + 2  
     dados = sheet.get_all_values()
     for i, nome in enumerate(participantes, start=2):
         try:
