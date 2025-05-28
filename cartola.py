@@ -93,7 +93,7 @@ def preparar_planilha(sheet, rodadas_do_mes):
     format_cell_range(sheet, faixa_toda, centralizado)
 
 
-def aplicar_formatacao_total(sheet, total_col, participantes):
+'''def aplicar_formatacao_total(sheet, total_col, participantes):
     from gspread_formatting import (
         get_conditional_format_rules, ConditionalFormatRule,
         BooleanRule, BooleanCondition, CellFormat, Color
@@ -112,7 +112,7 @@ def aplicar_formatacao_total(sheet, total_col, participantes):
         }],
         booleanRule=BooleanRule(
             condition=BooleanCondition('CUSTOM_FORMULA', [
-                f'=ROW()=MATCH(MAX({faixa}), {faixa}, 0)+1'
+                f"={letra_total}1=MAX({faixa})"
             ]),
             format=CellFormat(backgroundColor=Color(0.8, 1, 0.8))  # Verde claro
         )
@@ -121,7 +121,7 @@ def aplicar_formatacao_total(sheet, total_col, participantes):
     rules = get_conditional_format_rules(sheet)
     rules.clear()
     rules.append(regra)
-    rules.save()
+    rules.save()'''
 
 
 def mostrar_pontuacoes(sheet, rodada, rodadas_do_mes):
@@ -145,8 +145,8 @@ def inserir_pontuacoes(sheet, rodada, rodadas_do_mes, total_col):
             except ValueError:
                 print("Valor inválido, ignorado.")
                 
-    aplicar_formatacao_total(sheet, total_col, participantes)
-
+    #aplicar_formatacao_total(sheet, total_col, participantes)
+    pass
 
 def alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes, total_col):
     col = rodadas_do_mes.index(rodada) + 2
@@ -170,8 +170,8 @@ def alterar_pontuacao_individual(sheet, rodada, rodadas_do_mes, total_col):
     except ValueError:
         print("Entrada inválida.")
         
-    aplicar_formatacao_total(sheet, total_col, participantes)
-
+    #aplicar_formatacao_total(sheet, total_col, participantes)
+    pass
 
 def main():
     mes = input("Informe o mês (JUNHO, JULHO, AGOSTO, ...): ").strip().upper()
